@@ -1,3 +1,18 @@
+# fnOS Clash.Meta —— root + TUN 全局接管 fork
+
+> 本仓库 fork 自 https://github.com/qiyueqixi/clash-meta ，仅做两处补丁 + GitHub Actions 自动构建：
+> 1. `fnos-appstore-mihomo/config/privilege`：`run-as` package → **root**（创建 TUN、auto-route 需要特权）；
+> 2. `fnos-appstore-mihomo/app/config.default.yaml`：追加 `tun:` 全局接管块（`auto-route`、
+>    `dns-hijack: any:53`、`strict-route: false`）与 fake-ip-filter 局域网豁免。
+>
+> 用途：配合 GateWeaver（https://github.com/tcw-znjt/GateWeaver）的 ARP 引导 + TunGuard，
+> 让被接管设备与 NAS 本机流量走同一条 TUN 路径进 mihomo（等价 OpenWrt+OpenClash 模型）。
+>
+> 发布：打 tag（如 `v1.19.27-root-1`）→ Actions 自动构建 x86/arm fpk 并 Attach 到 Release。
+> 升级 mihomo：改 workflow 里 `MIHOMO_VERSION` 与 manifest `version`。
+> ⚠️ 从官方非 root 版迁移：先卸载旧包（保留配置可选），再装本 fork；已有旧 config.yaml 时
+>    tun 块不会自动注入（cmd/main 不覆盖已存在配置），需删除 config.yaml 重跑向导或手工补段。
+
 有BUG自己拿源码修一下把,我不管其他的
 
 # fnOS Clash.Meta 原生应用包

@@ -1,0 +1,79 @@
+name: Build fpk (root+TUN)
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "fpk 版本号（如 1.19.27-root-1）"
+        default: "1.19.27-root-dev"
+
+permissions:
+  contents: write
+
+env:
+  MIHOMO_VERSION: v1.19.27   # 与上游 manifest app 版本对应的 mihomo release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: go.mod
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch mihomo binaries (upstream expects .tmp/downloads/)
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/downloads
+          base="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}"
+          curl -fsSL -o /tmp/amd64.gz "${base}/mihomo-linux-amd64-compatible-${MIHOMO_VERSION}.gz"
+          curl -fsSL -o /tmp/arm64.gz "${base}/mihomo-linux-arm64-${MIHOMO_VERSION}.gz"
+          gzip -dc /tmp/amd64.gz > .tmp/downloads/mihomo-linux-amd64-compatible
+          gzip -dc /tmp/arm64.gz  > .tmp/downloads/mihomo-linux-arm64
+          chmod +x .tmp/downloads/mihomo-linux-amd64-compatible .tmp/downloads/mihomo-linux-arm64
+          ls -la .tmp/downloads/
+
+      - name: Build
+        run: python3 scripts/build-fpk.py --version "${{ steps.ver.outputs.version }}"
+
+      - name: Show outputs
+        run: ls -la dist/ && cat dist/SHA256SUMS.txt
+
+      - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.fpk
+            dist/SHA256SUMS.txt
+          draft: false
+          prerelease: false
+          body: |
+            Clash.Meta mihomo ${{ env.MIHOMO_VERSION }} —— root + TUN 全局接管 fork。
+
+            相对上游 qiyueqixi/clash-meta 的两处补丁：
+            - `config/privilege` run-as → root（TUN 与 auto-route 需要特权）
+            - `app/config.default.yaml` 追加 `tun:` 全局接管块 + fake-ip-filter 局域网豁免
+
+            配合 GateWeaver（ARP 引导 + TunGuard）实现旁路设备全量走 Clash。
+            校验：`sha256sum -c SHA256SUMS.txt`。

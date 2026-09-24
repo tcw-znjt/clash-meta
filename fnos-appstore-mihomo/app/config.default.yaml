@@ -20,6 +20,13 @@ dns:
   ipv6: false
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "+.msftconnecttest.com"
+    - "+.msftncsi.com"
+    - "time.*.com"
+    - "ntp.*.com"
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
@@ -42,3 +49,15 @@ proxy-groups:
 
 rules:
   - MATCH,DIRECT
+
+# ==== GateWeaver fork patch: root + TUN global takeover ====
+# auto-route 使本机与被 NAS 中转（FORWARD）的流量都命中 tun0 进入 mihomo，
+# 配合 GateWeaver 的 ARP 引导实现"旁路设备流量 = NAS 本地流量"模型。
+tun:
+  enable: true
+  stack: system
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+strict-route: false
