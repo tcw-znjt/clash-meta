@@ -53,6 +53,9 @@ jobs:
           chmod +x .tmp/downloads/mihomo-linux-amd64-compatible .tmp/downloads/mihomo-linux-arm64
           ls -la .tmp/downloads/
 
+      - name: Clean pre-committed dist (keep only fresh build)
+        run: rm -rf dist
+
       - name: Build
         run: python3 scripts/build-fpk.py --version "${{ steps.ver.outputs.version }}"
 
@@ -64,7 +67,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/*.fpk
+            dist/clash.meta_${{ steps.ver.outputs.version }}_x86.fpk
+            dist/clash.meta_${{ steps.ver.outputs.version }}_arm.fpk
             dist/SHA256SUMS.txt
           draft: false
           prerelease: false
