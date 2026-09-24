@@ -9,3 +9,5 @@ scripts/*.py text eol=lf
 scripts/**/*.go text eol=lf
 go.mod text eol=lf
 *.md text eol=lf
+fnos-appstore-mihomo/app/dashboard/*.html text eol=lf
+fnos-appstore-mihomo/app/dashboard/*.json text eol=lf
