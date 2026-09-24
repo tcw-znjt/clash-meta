@@ -279,6 +279,21 @@ dns:
   fallback:
     - 1.1.1.1
     - 8.8.8.8
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "+.msftconnecttest.com"
+    - "+.msftncsi.com"
+
+# ==== GateWeaver fork patch #5: subscription template also gets TUN global takeover ====
+tun:
+  enable: true
+  stack: system
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+strict-route: false
 
 proxy-providers:
   subscription:
@@ -312,6 +327,7 @@ proxy-groups:
 
 rules:
 ${subscription_domain_rule}
+  - GEOIP,LAN,DIRECT,no-resolve
   - MATCH,PROXY
 EOF
 
