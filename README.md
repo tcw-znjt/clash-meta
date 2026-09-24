@@ -3,7 +3,8 @@
 > 本仓库 fork 自 https://github.com/qiyueqixi/clash-meta ，仅做两处补丁 + GitHub Actions 自动构建：
 > 1. `fnos-appstore-mihomo/config/privilege`：`run-as` package → **root**（创建 TUN、auto-route 需要特权）；
 > 2. `fnos-appstore-mihomo/app/config.default.yaml`：追加 `tun:` 全局接管块（`auto-route`、
->    `dns-hijack: any:53`、`strict-route: false`）与 fake-ip-filter 局域网豁免。
+>    `dns-hijack: any:53`、`strict-route: false`）与 fake-ip-filter 局域网豁免；
+> 3. `scripts/build-fpk.py`：校验器允许 `run-as=root`（上游原本强制 package）。
 >
 > 用途：配合 GateWeaver（https://github.com/tcw-znjt/GateWeaver）的 ARP 引导 + TunGuard，
 > 让被接管设备与 NAS 本机流量走同一条 TUN 路径进 mihomo（等价 OpenWrt+OpenClash 模型）。

@@ -194,8 +194,9 @@ def validate_entry() -> None:
     privilege_path = SOURCE_DIR / "config" / "privilege"
     privilege = json.loads(privilege_path.read_text(encoding="utf-8"))
     run_as = privilege.get("defaults", {}).get("run-as")
-    if run_as != "package":
-        raise RuntimeError(f"{privilege_path} must use defaults.run-as=package, got {run_as!r}")
+    # GateWeaver fork patch #3: 本 fork 有意使用 root 运行身份（TUN/auto-route 需特权）
+    if run_as not in ("package", "root"):
+        raise RuntimeError(f"{privilege_path} must use defaults.run-as=package|root, got {run_as!r}")
     resource_path = SOURCE_DIR / "config" / "resource"
     resource = json.loads(resource_path.read_text(encoding="utf-8"))
     shares = resource.get("data-share", {}).get("shares", [])
